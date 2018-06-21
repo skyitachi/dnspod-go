@@ -121,6 +121,10 @@ func (s *DomainsService) Create(domainAttributes Domain) (Domain, *Response, err
 		return Domain{}, res, err
 	}
 
+	if returnedDomain.Status.Code != "1" {
+		return Domain{}, res, fmt.Errorf(returnedDomain.Status.Message)
+	}
+
 	return returnedDomain.Domain, res, nil
 }
 

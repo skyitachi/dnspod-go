@@ -30,7 +30,7 @@ type DomainInfo struct {
 }
 
 type Domain struct {
-	ID               int    `json:"id,omitempty"`
+	ID               string    `json:"id,omitempty"`
 	Name             string `json:"name,omitempty"`
 	PunyCode         string `json:"punycode,omitempty"`
 	Grade            string `json:"grade,omitempty"`
@@ -51,6 +51,7 @@ type Domain struct {
 	Owner            string `json:"owner,omitempty"`
 	AuthToAnquanBao  bool   `json:"auth_to_anquanbao,omitempty"`
 }
+
 
 type domainListWrapper struct {
 	Status  Status     `json:"status"`

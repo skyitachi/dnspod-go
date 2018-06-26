@@ -166,3 +166,17 @@ func (s *DomainsService) Delete(ID int) (*Response, error) {
 
 	return res, nil
 }
+
+func (s *DomainsService) UpdateStatus(id string, status string) (*Response, error) {
+	path := domainAction("Status")
+	returnedDomain := domainWrapper{}
+	payload := newPayLoad(s.client.CommonParams)
+	payload.Set("domain_id", id)
+	payload.Set("status", status)
+	res, err := s.client.post(path, payload, &returnedDomain)
+
+	if err != nil {
+		return res, err
+	}
+	return res, nil
+}

@@ -157,3 +157,24 @@ func TestDomainsService_Delete(t *testing.T) {
 		t.Errorf("Domains.Delete returned error: %v", err)
 	}
 }
+
+func TestDomainsService_UpdateStatus(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/Domain.Status", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "POST")
+		fmt.Fprint(w, `{
+			"status": {
+				"code": "1",
+				"message": "Action completed successful",
+				"created_at": "2015-01-18 12:02:04"
+			}
+		}`)
+	})
+
+	_, err := client.Domains.UpdateStatus("1", "enable")
+	if err != nil {
+		t.Errorf("Domains.UpdateStatus returned error: %v", err)
+	}
+}

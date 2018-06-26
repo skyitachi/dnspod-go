@@ -189,3 +189,29 @@ func TestDomainsService_DeleteRecord_failed(t *testing.T) {
 		t.Errorf("Records.Delete returned %+v, should match %+v", err, match)
 	}
 }
+
+func TestDomainsService_UpdateRecordStatus(t *testing.T) {
+	setup()
+	defer teardown()
+	mux.HandleFunc("/Record.Status", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r,"POST")
+		fmt.Fprint(w, `
+			{
+				"status": {
+					"code": "1",
+					"message": "Action completed successful",
+					"created_at": "2015-01-18 20:07:29"
+				},
+				"record": {
+					"id": 16909160,
+					"name": "@",
+					"status": "disable"
+				}
+			}
+		`)
+	})
+	_, err := client.Domains.UpdateRecordStatus("1", "2", "disable")
+	if err != nil {
+		t.Errorf("Domains.UpdateRecordStatus unexpected error: %s", err.Error())
+	}
+}

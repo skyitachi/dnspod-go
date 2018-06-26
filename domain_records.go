@@ -21,13 +21,6 @@ type Record struct {
 	UseAQB        string `json:"use_aqb,omitempty"`
 }
 
-type SimpleRecord struct {
-	ID int `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
-	Value string `json:"value,omitempty"`
-	Status string `json:"status,omitempty"`
-}
-
 type recordsWrapper struct {
 	Status  Status     `json:"status"`
 	Info    DomainInfo `json:"info"`
@@ -40,11 +33,6 @@ type recordWrapper struct {
 	Record Record     `json:"record"`
 }
 
-type simpleRecordWrapper struct {
-	Status Status     `json:"status"`
-	Info   DomainInfo `json:"info"`
-	Record SimpleRecord `json:"record"`
-}
 
 // recordAction generates the resource path for given record that belongs to a domain.
 func recordAction(action string) string {
@@ -245,8 +233,28 @@ func (s *DomainsService) DeleteRecord(domain string, recordID string) (*Response
 	}
 
 	if returnedRecord.Status.Code != "1" {
-		return nil, fmt.Errorf("Could not get domains: %s", returnedRecord.Status.Message)
+		return nil, fmt.Errorf("Could not delete record: %s", returnedRecord.Status.Message)
 	}
 
 	return res, nil
 }
+
+func (s *DomainsService) UpdateRecordStatus(domainID string, recordID string, status string) (*Response, error) {
+	path := recordAction("Status")
+	payload := newPayLoad(s.client.CommonParams)
+	payload.Add("domain_id", domainID)
+	payload.Add("record_id", recordID)
+	payload.Add("status", status)
+
+	returnedRecord := recordWrapper{}
+
+	res, err := s.client.post(path, payload, &returnedRecord)
+	if err != nil {
+		return res, err
+	}
+	if returnedRecord.Status.Code != "1" {
+		return nil, fmt.Errorf("Could not change record status: %s", returnedRecord.Status.Message)
+	}
+	return res, nil
+}
+

@@ -25,6 +25,9 @@ func init() {
 	jsoniter.RegisterFieldDecoderFunc("dnspod.Domain", "ID", func(ptr unsafe.Pointer, iter *jsoniter.Iterator) {
 		*((*string)(ptr)) = iter.ReadAny().ToString()
 	})
+	jsoniter.RegisterFieldDecoderFunc("dnspod.Record", "ID", func(ptr unsafe.Pointer, iter *jsoniter.Iterator) {
+		*((*string)(ptr)) = iter.ReadAny().ToString()
+	})
 }
 
 const (

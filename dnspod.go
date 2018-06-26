@@ -22,6 +22,9 @@ func init() {
 	jsoniter.RegisterFieldDecoderFunc("dnspod.Domain", "GroupID", func(ptr unsafe.Pointer, iter *jsoniter.Iterator) {
 		*((*string)(ptr)) = iter.ReadAny().ToString()
 	})
+	jsoniter.RegisterFieldDecoderFunc("dnspod.Domain", "ID", func(ptr unsafe.Pointer, iter *jsoniter.Iterator) {
+		*((*string)(ptr)) = iter.ReadAny().ToString()
+	})
 }
 
 const (
@@ -157,7 +160,8 @@ func (c *Client) Do(method, path string, payload url.Values, v interface{}) (*Re
 		if w, ok := v.(io.Writer); ok {
 			io.Copy(w, res.Body)
 		} else {
-			err = json.NewDecoder(res.Body).Decode(v)
+			d := json.NewDecoder(res.Body)
+			err = d.Decode(v)
 		}
 	}
 

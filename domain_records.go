@@ -21,6 +21,13 @@ type Record struct {
 	UseAQB        string `json:"use_aqb,omitempty"`
 }
 
+type SimpleRecord struct {
+	ID int `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+	Value string `json:"value,omitempty"`
+	Status string `json:"status,omitempty"`
+}
+
 type recordsWrapper struct {
 	Status  Status     `json:"status"`
 	Info    DomainInfo `json:"info"`
@@ -31,6 +38,12 @@ type recordWrapper struct {
 	Status Status     `json:"status"`
 	Info   DomainInfo `json:"info"`
 	Record Record     `json:"record"`
+}
+
+type simpleRecordWrapper struct {
+	Status Status     `json:"status"`
+	Info   DomainInfo `json:"info"`
+	Record SimpleRecord `json:"record"`
 }
 
 // recordAction generates the resource path for given record that belongs to a domain.
@@ -164,6 +177,8 @@ func (s *DomainsService) UpdateRecord(domain string, recordID string, recordAttr
 	payload := newPayLoad(s.client.CommonParams)
 
 	payload.Add("domain_id", domain)
+
+	payload.Add("record_id", recordID)
 
 	if recordAttributes.Name != "" {
 		payload.Add("sub_domain", recordAttributes.Name)

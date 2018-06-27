@@ -215,3 +215,36 @@ func TestDomainsService_UpdateRecordStatus(t *testing.T) {
 		t.Errorf("Domains.UpdateRecordStatus unexpected error: %s", err.Error())
 	}
 }
+
+func TestDomainsService_GetRecordLine(t *testing.T) {
+	setup()
+	defer teardown()
+	mux.HandleFunc("/Record.Line", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "POST")
+		fmt.Fprint(w, `
+			{
+				"status": {
+					"code": "1",
+					"message": "Action completed successful",
+					"created_at": "2015-01-18 20:07:29"
+				},
+				"line_ids": {
+					"国内": "7=0",
+					"默认": 0
+				},
+				"lines": [
+					"国内",
+					"默认"
+				]
+			}
+		`)
+	})
+	recordLines, _, err := client.Domains.GetRecordLine()
+	if err != nil {
+		t.Error("unexpected error: ", err)
+	}
+	if len(recordLines) != 2 {
+		t.Errorf("unexpect record line length: expect 2, real %d", len(recordLines))
+	}
+	fmt.Println(recordLines)
+}

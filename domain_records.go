@@ -21,6 +21,17 @@ type Record struct {
 	UseAQB        string `json:"use_aqb,omitempty"`
 }
 
+type RecordLine struct {
+  Line string `json:"line"`
+  LineID string `json:"line_id"`
+}
+
+type linesWrapper struct {
+	Lines []string `json:"lines"`
+	LineIDs map[string]interface{} `json:"line_ids"`
+	Status Status `json:"status"`
+}
+
 type recordsWrapper struct {
 	Status  Status     `json:"status"`
 	Info    DomainInfo `json:"info"`
@@ -233,7 +244,7 @@ func (s *DomainsService) DeleteRecord(domain string, recordID string) (*Response
 	}
 
 	if returnedRecord.Status.Code != "1" {
-		return nil, fmt.Errorf("Could not delete record: %s", returnedRecord.Status.Message)
+		return nil, fmt.Errorf("could not delete record: %s", returnedRecord.Status.Message)
 	}
 
 	return res, nil
@@ -253,8 +264,38 @@ func (s *DomainsService) UpdateRecordStatus(domainID string, recordID string, st
 		return res, err
 	}
 	if returnedRecord.Status.Code != "1" {
-		return nil, fmt.Errorf("Could not change record status: %s", returnedRecord.Status.Message)
+		return nil, fmt.Errorf("could not change record status: %s", returnedRecord.Status.Message)
 	}
 	return res, nil
+}
+
+func (s *DomainsService) GetRecordLine() ([]RecordLine, *Response, error) {
+	path := recordAction("Line")
+	payload := newPayLoad(s.client.CommonParams)
+
+	lines := linesWrapper{}
+	res, err := s.client.post(path, payload, &lines)
+	if err != nil {
+		return []RecordLine{}, res, err
+	}
+	if lines.Status.Code != "1" {
+		return []RecordLine{}, nil, fmt.Errorf("could not get record line: %s", lines.Status.Message)
+	}
+	var ret []RecordLine
+	for k, v := range lines.LineIDs {
+		s, ok := v.(string)
+		if !ok && k == "默认" {
+			ret = append(ret, RecordLine{
+				Line: k,
+				LineID: "0",
+			})
+		} else {
+			ret = append(ret, RecordLine{
+				Line: k,
+				LineID: s,
+			})
+		}
+	}
+	return ret, res, nil
 }
 

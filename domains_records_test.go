@@ -239,12 +239,11 @@ func TestDomainsService_GetRecordLine(t *testing.T) {
 			}
 		`)
 	})
-	recordLines, _, err := client.Domains.GetRecordLine()
+	recordLines, _, err := client.Domains.GetRecordLine("DP_Free", "1")
 	if err != nil {
 		t.Error("unexpected error: ", err)
 	}
 	if len(recordLines) != 2 {
 		t.Errorf("unexpect record line length: expect 2, real %d", len(recordLines))
 	}
-	fmt.Println(recordLines)
 }

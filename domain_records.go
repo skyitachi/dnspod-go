@@ -269,10 +269,11 @@ func (s *DomainsService) UpdateRecordStatus(domainID string, recordID string, st
 	return res, nil
 }
 
-func (s *DomainsService) GetRecordLine() ([]RecordLine, *Response, error) {
+func (s *DomainsService) GetRecordLine(domainGrade string, domainID string) ([]RecordLine, *Response, error) {
 	path := recordAction("Line")
 	payload := newPayLoad(s.client.CommonParams)
-
+	payload.Set("domain_grade", domainGrade)
+	payload.Set("domain_id", domainID)
 	lines := linesWrapper{}
 	res, err := s.client.post(path, payload, &lines)
 	if err != nil {

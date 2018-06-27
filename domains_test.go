@@ -178,3 +178,44 @@ func TestDomainsService_UpdateStatus(t *testing.T) {
 		t.Errorf("Domains.UpdateStatus returned error: %v", err)
 	}
 }
+
+func TestDomainsService_GetUserInfo(t *testing.T) {
+	setup()
+	defer teardown()
+	mux.HandleFunc("/User.Detail", func (w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "POST")
+		fmt.Fprint(w, `{
+			"status": {
+					"code": "1",
+					"message": "Action completed successful",
+					"created_at": "2015-01-18 15:04:07"
+				},
+				"info": {
+					"user": {
+						"real_name": "",
+						"user_type": "personal",
+						"telephone": "18754553214",
+						"im": "10000000",
+						"nick": "DNSPod 先生",
+						"id": "625033",
+						"email": "api@dnspod.com",
+						"status": "enabled",
+						"email_verified": "no",
+						"telephone_verified": "no",
+						"weixin_binded": "no",
+						"agent_pending": false,
+						"balance": 0,
+						"smsbalance": 0,
+						"user_grade": "DP_Free"
+					}
+				}
+		}`)
+	})
+	user, _, err := client.Domains.GetUserInfo()
+	if err != nil {
+		t.Error(err)
+	}
+	if user.UserGrade != "DP_Free" {
+		t.Errorf("unexpected usergrade: %s, expected DP_Free", user.UserGrade)
+	}
+}

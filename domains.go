@@ -52,9 +52,6 @@ type Domain struct {
 	AuthToAnquanBao  bool   `json:"auth_to_anquanbao,omitempty"`
 }
 
-type SimpleDomain struct {
-
-}
 type domainListWrapper struct {
 	Status  Status     `json:"status"`
 	Info    DomainInfo `json:"info"`

@@ -22,6 +22,11 @@ type User struct {
 	UserGrade string `json:"user_grade"`
 }
 
+func (u User) String() string {
+	bs, _ := json.Marshal(u)
+	return string(bs)
+}
+
 type UserInfo struct {
 	User User `json:"user"`
 }

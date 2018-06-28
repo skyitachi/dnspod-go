@@ -25,6 +25,11 @@ type Record struct {
 	RecordLineID string `json:"record_line_id,omitempty"`
 }
 
+func (r Record) String() string {
+	bs, _ := json.Marshal(r)
+	return string(bs)
+}
+
 type RecordLine struct {
   Line string `json:"line"`
   LineID string `json:"line_id"`

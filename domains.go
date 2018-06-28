@@ -52,6 +52,11 @@ type Domain struct {
 	AuthToAnquanBao  bool   `json:"auth_to_anquanbao,omitempty"`
 }
 
+func (d Domain) String() string {
+	bs, _ := json.Marshal(d)
+	return string(bs)
+}
+
 type domainListWrapper struct {
 	Status  Status     `json:"status"`
 	Info    DomainInfo `json:"info"`

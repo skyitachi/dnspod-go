@@ -19,6 +19,10 @@ type Record struct {
 	Remark        string `json:"remark,omitempty"`
 	UpdateOn      string `json:"updated_on,omitempty"`
 	UseAQB        string `json:"use_aqb,omitempty"`
+	SubDomain string `json:"sub_domain,omitempty"`
+	RecordType string `json:"record_type,omitempty"`
+	RecordLine string `json:"record_line,omitempty"`
+	RecordLineID string `json:"record_line_id,omitempty"`
 }
 
 type RecordLine struct {
@@ -163,8 +167,20 @@ func (s *DomainsService) GetRecord(domain string, recordID string) (Record, *Res
 	if returnedRecord.Status.Code != "1" {
 		return returnedRecord.Record, nil, fmt.Errorf("Could not get domains: %s", returnedRecord.Status.Message)
 	}
-
-	return returnedRecord.Record, res, nil
+	record := returnedRecord.Record
+	if record.Type == "" && record.RecordType != "" {
+		record.Type = record.RecordType
+	}
+	if record.Line == "" && record.RecordLine != "" {
+		record.Line = record.RecordLine
+	}
+	if record.LineID == "" && record.RecordLineID != "" {
+		record.LineID = record.RecordLineID
+	}
+	if record.Name == "" && record.SubDomain != "" {
+		record.Name = record.SubDomain
+	}
+	return record, res, nil
 }
 
 // UpdateRecord updates a domain record.

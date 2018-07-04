@@ -18,7 +18,7 @@ type DomainInfo struct {
 	DomainTotal   int    `json:"domain_total,omitempty"`
 	AllTotal      int    `json:"all_total,omitempty"`
 	MineTotal     int    `json:"mine_total,omitempty"`
-	ShareTotal    string `json:"share_total,omitempty"`
+	ShareTotal    int 	 `json:"share_total,omitempty"`
 	VipTotal      int    `json:"vip_total,omitempty"`
 	IsMarkTotal   int    `json:"ismark_total,omitempty"`
 	PauseTotal    int    `json:"pause_total,omitempty"`
@@ -27,6 +27,7 @@ type DomainInfo struct {
 	SpamTotal     int    `json:"spam_total,omitempty"`
 	VipExpire     int    `json:"vip_expire,omitempty"`
 	ShareOutTotal int    `json:"share_out_total,omitempty"`
+	RecentTotal   int 	 `json:"recent_total,omitempty"`
 }
 
 type Domain struct {
@@ -50,6 +51,21 @@ type Domain struct {
 	CNameSpeedUp     string `json:"cname_speedup,omitempty"`
 	Owner            string `json:"owner,omitempty"`
 	AuthToAnquanBao  bool   `json:"auth_to_anquanbao,omitempty"`
+}
+
+type DomainQuery struct {
+	Type string
+	CurrentPage int
+	PageSize int
+	GroupId string
+	Keyword string
+}
+
+type PaginationDomainList struct {
+	CurrentPage int `json:"currentPage"`
+	PageSize int `json:"pageSize"`
+	Total int `json:"total"`
+	List []Domain `json:"list"`
 }
 
 func (d Domain) String() string {
@@ -86,27 +102,47 @@ func domainAction(action string) string {
 // List the domains.
 //
 // dnspod API docs: https://www.dnspod.cn/docs/domains.html#domain-list
-func (s *DomainsService) List() ([]Domain, *Response, error) {
+func (s *DomainsService) List(query DomainQuery) (PaginationDomainList, *Response, error) {
 	path := domainAction("List")
 	returnedDomains := domainListWrapper{}
 
 	payload := newPayLoad(s.client.CommonParams)
+	if query.Type != "" {
+		payload.Set("type", query.Type)
+	}
+	if query.PageSize != 0 {
+		payload.Set("offset", strconv.Itoa(query.CurrentPage))
+		payload.Set("length", strconv.Itoa(query.PageSize))
+	}
+	if query.Keyword != "" {
+		payload.Set("keyword", query.Keyword)
+	}
+	if query.GroupId != "" {
+		payload.Set("group_id", query.GroupId)
+	}
 	res, err := s.client.post(path, payload, &returnedDomains)
 	if err != nil {
-		return []Domain{}, res, err
+		return PaginationDomainList{}, res, err
 	}
-
-	domains := []Domain{}
 
 	if returnedDomains.Status.Code != "1" {
-		return domains, nil, fmt.Errorf("Could not get domains: %s", returnedDomains.Status.Message)
+		return PaginationDomainList{}, nil, fmt.Errorf("Could not get domains: %s", returnedDomains.Status.Message)
 	}
 
-	for _, domain := range returnedDomains.Domains {
-		domains = append(domains, domain)
+	var total int
+	if returnedDomains.Info == (DomainInfo{}) {
+		total = len(returnedDomains.Domains)
+	} else {
+		total = getDomainListTotalSizeByType(query.Type, returnedDomains.Info)
 	}
 
-	return domains, res, nil
+
+	return PaginationDomainList{
+		CurrentPage: query.CurrentPage,
+		PageSize: query.PageSize,
+		Total: total,
+		List: returnedDomains.Domains,
+	}, res, nil
 }
 
 // Create a new domain.
@@ -181,4 +217,29 @@ func (s *DomainsService) UpdateStatus(id string, status string) (*Response, erro
 		return res, err
 	}
 	return res, nil
+}
+
+func getDomainListTotalSizeByType(t string, info DomainInfo) int {
+	if t == "" {
+		return info.DomainTotal
+	}
+	switch t {
+	case "all":
+		return info.AllTotal
+	case "mine":
+		return info.MineTotal
+	case "share":
+		return info.ShareTotal
+	case "ismark":
+		return info.IsMarkTotal
+	case "pause":
+		return info.PauseTotal
+	case "vip":
+		return info.VipTotal
+	case "recent":
+		return info.RecentTotal
+	case "share_out":
+		return info.ShareOutTotal
+	}
+	return info.DomainTotal
 }

@@ -31,12 +31,25 @@ func TestDomainsService_List(t *testing.T) {
 	mux.HandleFunc("/Domain.List", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, "POST")
 		fmt.Fprint(w, `{
-			"status": {"code":"1","message":""},
+			"status": { "code":"1","message":""},
+			"info": {
+				"domain_total": 2,
+				"all_total": 2,
+				"mine_total": 2,
+				"share_total": "0",
+				"vip_total": 0,
+				"ismark_total": 0,
+				"pause_total": 0,
+				"error_total": 2,
+				"lock_total": 0,
+				"spam_total": 0,
+				"vip_expire": 0,
+				"share_out_total": 0
+			},
 			"domains": [
 				{
 					"id": 2238269,
 					"status": "enable"
-
 				},
 				{
 					"id": 10360095,
@@ -46,14 +59,18 @@ func TestDomainsService_List(t *testing.T) {
 			]}`)
 	})
 
-	domains, _, err := client.Domains.List()
+	domains, _, err := client.Domains.List(DomainQuery{
+		CurrentPage: 0,
+		PageSize: 10,
+		Keyword: "1.2.2.3",
+	})
 
 	if err != nil {
 		t.Errorf("Domains.List returned error: %v", err)
 	}
 
 	want := []Domain{{ID: "2238269", Status: "enable"}, {ID: "10360095", Status: "enable"}}
-	if !reflect.DeepEqual(domains, want) {
+	if !reflect.DeepEqual(domains.List, want) {
 		t.Errorf("Domains.List returned %+v, want %+v", domains, want)
 	}
 }
@@ -80,14 +97,18 @@ func TestDomainsService_List_Ambiguous_Value(t *testing.T) {
 			]}`)
 	})
 
-	domains, _, err := client.Domains.List()
+	domains, _, err := client.Domains.List(DomainQuery{
+		CurrentPage: 0,
+		PageSize: 10,
+		Keyword: "1.2.2.3",
+	})
 
 	if err != nil {
 		t.Errorf("Domains.List returned error: %v", err)
 	}
 
 	want := []Domain{{ID: "2238269", Status: "enable", GroupID: "9"}, {ID: "10360095", Status: "enable", GroupID: "9"}}
-	if !reflect.DeepEqual(domains, want) {
+	if !reflect.DeepEqual(domains.List, want) {
 		t.Errorf("Domains.List returned %+v, want %+v", domains, want)
 	}
 }

@@ -2,6 +2,7 @@ package dnspod
 
 import (
 	"fmt"
+	"strconv"
 )
 
 type Record struct {
@@ -25,6 +26,11 @@ type Record struct {
 	RecordLineID string `json:"record_line_id,omitempty"`
 }
 
+type RecordsInfo struct {
+	SubDomains int `json:"sub_domains"`
+	RecordTotal int `json:"record_total"`
+}
+
 func (r Record) String() string {
 	bs, _ := json.Marshal(r)
 	return string(bs)
@@ -35,6 +41,22 @@ type RecordLine struct {
   LineID string `json:"line_id"`
 }
 
+type RecordQuery struct {
+	DomainID string
+	Domain string
+	CurrentPage int
+	PageSize int
+	SubDomain string
+	Keyword string
+}
+
+type PaginationRecordList struct {
+	CurrentPage int `json:"currentPage"`
+	PageSize int `json:"pageSize"`
+	Total int `json:"total"`
+	List []Record `json:"list"`
+}
+
 type linesWrapper struct {
 	Lines []string `json:"lines"`
 	LineIDs map[string]interface{} `json:"line_ids"`
@@ -43,7 +65,7 @@ type linesWrapper struct {
 
 type recordsWrapper struct {
 	Status  Status     `json:"status"`
-	Info    DomainInfo `json:"info"`
+	Info    RecordsInfo `json:"info"`
 	Records []Record   `json:"records"`
 }
 
@@ -65,34 +87,47 @@ func recordAction(action string) string {
 // List the domain records.
 //
 // dnspod API docs: https://www.dnspod.cn/docs/records.html#record-list
-func (s *DomainsService) ListRecords(domainID string, recordName string) ([]Record, *Response, error) {
+
+func (s *DomainsService) ListRecords(query RecordQuery) (PaginationRecordList, *Response, error) {
 	path := recordAction("List")
 
 	payload := newPayLoad(s.client.CommonParams)
 
-	payload.Add("domain_id", domainID)
+	if query.DomainID != "" {
+		payload.Add("domain_id", query.DomainID)
+	}
+	if query.Domain != "" {
+		payload.Add("domain", query.Domain)
+	}
+	if query.PageSize != 0 {
+		payload.Add("offset", strconv.Itoa(query.CurrentPage))
+		payload.Add("length", strconv.Itoa(query.PageSize))
+	}
 
-	if recordName != "" {
-		payload.Add("sub_domain", recordName)
+	if query.SubDomain != "" {
+		payload.Add("sub_domain", query.SubDomain)
+	}
+	if query.Keyword != "" {
+		payload.Add("keyword", query.Keyword)
 	}
 
 	wrappedRecords := recordsWrapper{}
 
 	res, err := s.client.post(path, payload, &wrappedRecords)
 	if err != nil {
-		return []Record{}, res, err
+		return PaginationRecordList{}, res, err
 	}
 
 	if wrappedRecords.Status.Code != "1" {
-		return wrappedRecords.Records, nil, fmt.Errorf("Could not get domains: %s", wrappedRecords.Status.Message)
+		return PaginationRecordList{}, nil, fmt.Errorf("Could not get domains: %s", wrappedRecords.Status.Message)
 	}
 
-	records := []Record{}
-	for _, record := range wrappedRecords.Records {
-		records = append(records, record)
-	}
-
-	return records, res, nil
+	return PaginationRecordList{
+		CurrentPage: query.CurrentPage,
+		PageSize: query.PageSize,
+		Total: wrappedRecords.Info.RecordTotal,
+		List: wrappedRecords.Records,
+	}, res, nil
 }
 
 // CreateRecord creates a domain record.

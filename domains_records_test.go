@@ -39,14 +39,17 @@ func TestDomainsService_ListRecords_all(t *testing.T) {
 			]}`)
 	})
 
-	records, _, err := client.Domains.ListRecords("example.com", "")
+	records, _, err := client.Domains.ListRecords(RecordQuery{
+		DomainID: "13123213",
+		SubDomain: "a",
+	})
 
 	if err != nil {
 		t.Errorf("Domains.ListRecords returned error: %v", err)
 	}
 
 	want := []Record{{ID: "44146112", Name: "yizerowwwww"}, {ID: "44146112", Name: "yizerowwwww"}}
-	if !reflect.DeepEqual(records, want) {
+	if !reflect.DeepEqual(records.List, want) {
 		t.Fatalf("Domains.ListRecords returned %+v, want %+v", records, want)
 	}
 }
@@ -65,14 +68,17 @@ func TestDomainsService_ListRecords_subdomain(t *testing.T) {
 			]}`)
 	})
 
-	records, _, err := client.Domains.ListRecords("11223344", "@")
+	records, _, err := client.Domains.ListRecords(RecordQuery{
+		DomainID: "11223344",
+		SubDomain: "@",
+	})
 
 	if err != nil {
 		t.Errorf("Domains.ListRecords returned error: %v", err)
 	}
 
 	want := []Record{{ID: "44146112", Name: "yizerowwwww"}, {ID: "44146112", Name: "yizerowwwww"}}
-	if !reflect.DeepEqual(records, want) {
+	if !reflect.DeepEqual(records.List, want) {
 		t.Fatalf("Domains.ListRecords returned %+v, want %+v", records, want)
 	}
 }

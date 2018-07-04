@@ -42,12 +42,12 @@ type RecordLine struct {
 }
 
 type RecordQuery struct {
-	DomainID string
-	Domain string
-	CurrentPage int
-	PageSize int
-	SubDomain string
-	Keyword string
+	DomainID string	 `json:"domainID"`
+	Domain string	 `json:"domain,omitempty"`
+	CurrentPage int	 `json:"currentPage,omitempty"`
+	PageSize int	 `json:"pageSize,omitempty"`
+	SubDomain string `json:"subDomain,omitempty"`
+	Keyword string	 `json:"keyword,omitempty"`
 }
 
 type PaginationRecordList struct {
@@ -74,7 +74,6 @@ type recordWrapper struct {
 	Info   DomainInfo `json:"info"`
 	Record Record     `json:"record"`
 }
-
 
 // recordAction generates the resource path for given record that belongs to a domain.
 func recordAction(action string) string {

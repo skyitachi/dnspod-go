@@ -54,11 +54,11 @@ type Domain struct {
 }
 
 type DomainQuery struct {
-	Type string
-	CurrentPage int
-	PageSize int
-	GroupId string
-	Keyword string
+	Type string 	`json:"type,omitempty"`
+	CurrentPage int	`json:"currentPage,omitempty"`
+	PageSize int	`json:"pageSize,omitempty"`
+	GroupId string	`json:"groupId,omitempty"`
+	Keyword string	`json:"keyword,omitempty"`
 }
 
 type PaginationDomainList struct {
